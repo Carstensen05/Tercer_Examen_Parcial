@@ -1,0 +1,92 @@
+---
+title: "Covid - México"
+author: "Max Orozco Carstensen"
+date: "2023-11-21"
+output: html_document
+editor_options: 
+  markdown: 
+    wrap: sentence
+---
+
+### 1.Cargar Datos y Explorar:
+
+#### Carga el conjunto de datos proporcionado.
+
+```{r}
+library(tidyverse)
+
+Datos_Covid <- read_csv("01_Raw_Data/221129COVID19MEXICO.csv.zip")
+
+saveRDS (Datos_Covid, file = "03_Results/my_bd.rds")
+readRDS (file = "03_Results/my_bd.rds")
+```
+
+#### Muestra las primeras filas para entender su estructura.
+
+```{r}
+head (Datos_Covid)
+```
+
+### 2. Filtrado y Resumen:
+
+#### Filtra los datos para incluir solo los casos de mujeres mayores de 30 años con diabetes.
+
+```{r}
+M30D <- Datos_Covid %>%
+  filter (SEXO == 1) %>%
+  filter (EDAD > 30) %>% 
+  filter (DIABETES == 1)
+M30D
+```
+
+#### Calcula la cantidad total de casos y la edad promedio de este grupo.
+
+```{r}
+glimpse (M30D)
+Prom <- mean (M30D$EDAD)
+Prom
+```
+
+### 3. Gráfica de Barras:
+
+#### Crea un gráfico de barras que muestre la cantidad de casos por sector.
+
+```{r}
+Casos <- Datos_Covid %>%
+  filter (RESULTADO_ANTIGENO == 1) %>%
+  filter (RESULTADO_LAB == 1)
+Casos
+
+ggplot (data = Casos) +
+  geom_bar (mapping = aes (x = SECTOR))
+```
+
+### 4. Análisis Temporal:
+
+#### Convierte la columna de fechas a formato de fecha.
+
+```{r}
+Datos_Covid_Fecha <- as.Date (Datos_Covid$FECHA_ACTUALIZACION, "%m-%d-%Y") 
+class (Datos_Covid$FECHA_ACTUALIZACION)
+```
+
+#### Filtra los datos para incluir solo los casos desde el 1 de enero de 2020 hasta el 31 de diciembre de 2021.
+
+```{r}
+Datos_Covid %>% 
+  select (FECHA_ACTUALIZACION)
+  filter (FECHA_ACTUALIZACION > "01-01-2020" & FECHA_ACTUALIZACION < "12-31-2021")
+
+```
+
+#### Crea una gráfica de líneas que muestre la evolución diaria de casos en ese periodo.
+
+```{r}
+
+```
+
+#### Estima el $R_0$ y $R_t$
+
+```{r}
+
+```

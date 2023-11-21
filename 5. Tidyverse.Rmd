@@ -1,0 +1,59 @@
+---
+title: "Tidyverse"
+author: "Max Orozco Carstensen"
+date: "2023-11-20"
+output: html_document
+---
+
+Utiliza la librería `palmerpenguins` par el siguiente problema. Carga los datos, incluidos en esa librería, `penguins` a partir de ello escribe un script en R que resuelva lo siguiente:
+
+```{r}
+library (tidyverse) 
+library (palmerpenguins)
+```
+
+### 1. Filtra los pingüinos que pertenecen a la especie "Adelie" y tienen un peso corporal mayor a 3500 gramos.
+
+```{r}
+Adelie <- filter (penguins, species == "Adelie") %>%
+  filter (body_mass_g > 3500)
+glimpse (Adelie)
+```
+
+### 2. Crea una nueva columna llamada "bmi" (Body Mass Index) que represente el índice de masa corporal usando la fórmula:
+
+$$ BMI = peso (kg) / (altura (m))^2$$. La altura está representada en centímetros en la base de datos, así que conviértela a metros.
+
+```{r}
+Penguins_NA <- penguins %>%
+  na.omit()
+
+BMI <- mutate (Penguins_NA, BMI_V = body_mass_g * (1000) / ((flipper_length_mm * (1000)^2)))
+BMI
+```
+
+### 3. Agrupa los datos por la especie y calcula la media del índice de masa corporal (bmi) para cada especie.
+
+```{r}
+BMI_M <- BMI %>% 
+  group_by (species) %>% 
+  summarise (BMI_Mean = mean (BMI_V))
+BMI_M
+```
+
+### 4. Ordena las especies por la media del índice de masa corporal de manera descendente.
+
+```{r}
+BMI %>% 
+  group_by (species) %>%
+  arrange (-BMI)
+```
+
+### 5. Realiza un diagrama de barras de la media del índice de masa corporal por especie.
+
+```{r}
+BMI_Mean <- mean (BMI)
+
+ggplot (BMI_M, aes (x = species, y = BMI_Mean, fill = species)) + 
+  geom_bar (stat = "identity")
+```

@@ -1,0 +1,64 @@
+---
+title: "4. Enfermedades Transmitidas por Vectores"
+author: "Max Orozco Carstensen"
+date: "2023-11-20"
+output: html_document
+---
+
+La oncocercosis, también conocida como "ceguera de los ríos", es una enfermedad transmitida por vectores que afecta la piel y los ojos de los seres humanos. Es endémica en partes de África, Yemen y América Central, y es especialmente prevalente en el África subsahariana. Se transmite por Onchocerca volvulus, un gusano parásito cuyo ciclo de vida incluye cinco etapas larvarias, incluyendo una etapa que requiere un huésped humano y otra etapa que requiere un huésped mosca negra.
+
+La hora pico de picadura de las moscas negras es durante las horas diurnas, y las moscas negras permanecen cerca de sus lugares de reproducción en aguas bien oxigenadas. Por lo tanto, las comunidades en el borde del río están más expuestas al riesgo. La etapa del vector es muy complicada, y sería difícil incluir todas sus etapas en un modelo. Supondremos un tamaño de población total constante para el vector con un modelo SI para los vectores.
+
+El medicamento estándar para el tratamiento de la oncocercosis es la ivermectina; la administración oral mata las larvas rápidamente pero no mata a los gusanos adultos. Sin embargo, reduce su tasa reproductiva durante varios meses. El tratamiento con ivermectina está disponible para una fracción $p$ de la población, limitada por restricciones sobre quiénes pueden recibir la medicación, atención médica limitada y disposición a participar.
+
+### 1. Escibe un conjunto de ecuaciones diferenciales que describan esa situación. Justifica tus respuestas describiendo con detalle tus ecuaciones y supuestos asumidos.
+
+$$\dot S_H = \nu H - \beta_1 S_H I_F - \mu S_H$$
+Los humanos susceptibles ganarán individuos a través del nacimiento. Perderán individuos a través de la interacción con moscas infectadas, a una tasa $\beta_1$, y a través de la muerte natural. 
+En este sistema se asume que la única forma de transmisión es a través de la mordedura de moscas infectadas. 
+
+$$\dot I_H = \beta_1 S_H I_F - N (1-p) T  - \mu I_H$$
+Los humanos infectados ganarán individuos a través de la interacción con moscas infectadas, a una tasa $\beta_1$. Perderán individuos a través del tratamiento (ivermectina), proporcial a la cantidad de la población que puede recibir el tratamiento, y a través de la muerte natural. 
+En este sistema se asume que con el tratamiento las larvas son eliminadas y los adultos quedan en latencia, por eso no hay compartimento de recuperación. 
+
+$$\dot S_F = \nu F - \beta_2 S_F I_H - \mu S_F$$
+Las moscas susceptibles ganarán individuos a través del nacimiento. Perderán individuos a través de la interacción con humanos infectados, a una tasa $\beta_2$, y a través de la muerte natural. 
+Este sistema asume que las moscas sólo se pueden infectar a través de la mordedura de humanos infectados. 
+
+$$\dot I_F = \beta_2 S_F I_H - \mu I_F$$
+Las moscas infectadas ganarán individuos a través de la interacción con humanos infectados, a una tasa $\beta_2$. Perderán individuos a través de la muerte natural. 
+
+### 2. Resuelve tu sistema en R.
+
+```{r}
+library (deSolve) 
+
+SIV <- function (time, state, parameters) {
+  with (as.list (c (state, parameters)), {
+    dSH <- nuH - beta1 * SH * IF - muSH
+    dIH <- beta1 * SH * IF - TI * (1 - p) * SH * IH - muIH
+    dSF <- nuF - beta2 * SF * IH - muSF
+    dIF <- beta2 * SF * IH - muIF  
+    list (c (dSH, dIH, dSF, dIF)) 
+  })
+}
+
+parameters <- c (beta1 = 0.007, beta2 = 0.005, gamma = 0.4, nuH = 0.4, nuF = 0.8, muSH = 0.1, muIH = 0.2, muSF = 0.9, muIF = 0.1, TI = 0.02, p = 0.05)
+initial_conditions <- c (SH = 500, IH = 20, SF = 800, IF = 10) 
+time <- seq (0, 100, by = 0.01)
+out <- ode (initial_conditions, time, SIV, parameters)
+
+matplot (out [ , 1], out [ , 2 : 5], type = "l", xlab = "TIEMPO", ylab = "POBLACIÓN", main = "MODELO ENFERMEDADES TRANSMITIDAS POR VECTORES
+(0-100)", lwd = 3)
+legend ("topright", c ("HUMANO SUSCEPTIBLE", " HUMANO INFECTADO", "MOSCA SUSCEPTIBLE", "MOSCA INFECTADA"), col = 1 : 5, lty = 1 : 5, cex = 0.5)
+
+parameters <- c (beta1 = 0.007, beta2 = 0.005, gamma = 0.4, nuH = 0.4, nuF = 0.8, muSH = 0.1, muIH = 0.2, muSF = 0.9, muIF = 0.1, TI = 0.02, p = 0.05)
+initial_conditions <- c (SH = 500, IH = 20, SF = 800, IF = 10) 
+time <- seq (0, 20, by = 0.01)
+out <- ode (initial_conditions, time, SIV, parameters)
+
+matplot (out [ , 1], out [ , 2 : 5], type = "l", xlab = "TIEMPO", ylab = "POBLACIÓN", main = "MODELO ENFERMEDADES TRANSMITIDAS POR VECTORES
+(0-20)", lwd = 3)
+legend ("topright", c ("HUMANO SUSCEPTIBLE", " HUMANO INFECTADO", "MOSCA SUSCEPTIBLE", "MOSCA INFECTADA"), col = 1 : 5, lty = 1 : 5, cex = 0.5)
+```
+Debido a los valores de los parámetros y las poblaciones iniciales, se observa que tanto humanos, como moscas, comienzan siendo susceptibles y pasan a ser infectados, pues no se tiene casilla de recuperación. Además, se observa que el cambio en humanos es más ligero y bajo, debido a la opción de tratamiento (que las moscas no pueden recibir).
